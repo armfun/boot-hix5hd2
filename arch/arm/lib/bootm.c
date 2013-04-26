@@ -1,4 +1,8 @@
-/*
+/* Copyright (C) 2011
+ * Corscience GmbH & Co. KG - Simon Schwarz <schwarz@corscience.de>
+ *  - Added prep subcommand support
+ *  - Reorganized source - modeled after powerpc version
+ *
  * (C) Copyright 2002
  * Sysgo Real-Time Solutions, GmbH <www.elinos.com>
  * Marius Groeger <mgroeger@sysgo.de>
@@ -26,180 +30,89 @@
 #include <image.h>
 #include <u-boot/zlib.h>
 #include <asm/byteorder.h>
-#include <ethcfg.h>
+#include <libfdt.h>
+#include <fdt_support.h>
+#include <linux/compiler.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
 #if defined(CONFIG_SETUP_MEMORY_TAGS) || \
-defined(CONFIG_CMDLINE_TAG) || \
-defined(CONFIG_INITRD_TAG) || \
-defined(CONFIG_SERIAL_TAG) || \
-defined(CONFIG_REVISION_TAG) || \
-defined(CONFIG_ETHADDR_TAG) || \
-defined(CONFIG_ETHMDIO_INF) || \
-defined(CONFIG_NANDID_TAG) || \
-defined(CONFIG_SPIID_TAG) || \
-defined(CONFIG_SDKVERSION_TAG) || \
-defined(CONFIG_BOOTREG_TAG)
-static void setup_start_tag (bd_t *bd);
-
-# ifdef CONFIG_SETUP_MEMORY_TAGS
-static void setup_memory_tags (bd_t *bd);
-# endif
-static void setup_commandline_tag (bd_t *bd, char *commandline);
-
-# ifdef CONFIG_INITRD_TAG
-static void setup_initrd_tag (bd_t *bd, ulong initrd_start,
-			      ulong initrd_end);
-# endif
-
-static void setup_end_tag (bd_t *bd);
-
-# if defined(CONFIG_ETHMDIO_INF)
-static void setup_eth_mdiointf_tag(bd_t *bd, char *mdio_intf);
-#endif
-
-# if defined(CONFIG_ETHADDR_TAG)
-static void setup_ethaddr_tag(bd_t *bd, char* ethaddr);
-static void setup_phyaddr_tag(bd_t *bd,  int phy_addr_up, int phy_addr_down);
-#endif
-
-# if defined(CONFIG_NANDID_TAG)
-static void setup_nandid_tag(bd_t *bd);
-#endif
-
-#  if defined(CONFIG_NAND_PARAM_TAG)
-static void set_nand_param_tag(bd_t *bd);
-#endif
-
-# if defined(CONFIG_SPIID_TAG)
-static void setup_spiid_tag(bd_t *bd);
-#endif
-
-# if defined(CONFIG_SDKVERSION_TAG)
-static void setup_sdkversion_tag(bd_t *bd);
-#endif
-
-# if defined(CONFIG_BOOTREG_TAG)
-static void setup_bootreg_tag(bd_t *bd);
-#endif
-
-static void setup_eth_param(void);
-static void setup_param_tag(bd_t *bd);
-
+	defined(CONFIG_CMDLINE_TAG) || \
+	defined(CONFIG_INITRD_TAG) || \
+	defined(CONFIG_SERIAL_TAG) || \
+	defined(CONFIG_REVISION_TAG)
 static struct tag *params;
-#endif /* CONFIG_SETUP_MEMORY_TAGS || CONFIG_CMDLINE_TAG || CONFIG_INITRD_TAG */
+#endif
 
-int do_bootm_linux(int flag, int argc, char *argv[], bootm_headers_t *images)
+static ulong get_sp(void)
 {
-	bd_t	*bd = gd->bd;
-	char	*s;
-	int	machid = bd->bi_arch_number;
-	void	(*theKernel)(int zero, int arch, uint params);
+	ulong ret;
 
-#ifdef CONFIG_CMDLINE_TAG
-	char *commandline = getenv ("bootargs");
-#endif
-
-	if ((flag != 0) && (flag != BOOTM_STATE_OS_GO))
-		return 1;
-
-	theKernel = (void (*)(int, int, uint))images->ep;
-
-	s = getenv ("machid");
-	if (s) {
-		machid = simple_strtoul (s, NULL, 16);
-		printf ("Using machid 0x%x from environment\n", machid);
-	}
-
-	show_boot_progress (15);
-
-	debug ("## Transferring control to Linux (at address %08lx) ...\n",
-	       (ulong) theKernel);
-
-#if defined (CONFIG_SETUP_MEMORY_TAGS) || \
-    defined (CONFIG_CMDLINE_TAG) || \
-    defined (CONFIG_INITRD_TAG) || \
-    defined (CONFIG_SERIAL_TAG) || \
-    defined (CONFIG_REVISION_TAG) || \
-    defined (CONFIG_BOOTREG_TAG)
-	setup_start_tag (bd);
-#ifdef CONFIG_SERIAL_TAG
-	setup_serial_tag (&params);
-#endif
-#ifdef CONFIG_REVISION_TAG
-	setup_revision_tag (&params);
-#endif
-#ifdef CONFIG_SETUP_MEMORY_TAGS
-	setup_memory_tags (bd);
-#endif
-#ifdef CONFIG_CMDLINE_TAG
-	setup_commandline_tag (bd, commandline);
-#endif
-#ifdef CONFIG_INITRD_TAG
-	if (images->rd_start && images->rd_end)
-		setup_initrd_tag (bd, images->rd_start, images->rd_end);
-#endif
-#if defined(CONFIG_ETHMDIO_INF)
-	setup_eth_mdiointf_tag(bd, getenv("mdio_intf"));
-#endif
-#if defined(CONFIG_ETHADDR_TAG)
-	setup_ethaddr_tag(bd, getenv("ethaddr"));
-	setup_phyaddr_tag(bd, U_PHY_ADDR, D_PHY_ADDR);
-#endif
-#if defined(CONFIG_NANDID_TAG)
-	setup_nandid_tag(bd);
-#endif
-#if defined(CONFIG_NAND_PARAM_TAG)
-	set_nand_param_tag(bd);
-#endif
-#if defined(CONFIG_SPIID_TAG)
-	setup_spiid_tag(bd);
-#endif
-#if defined(CONFIG_SDKVERSION_TAG)
-	setup_sdkversion_tag(bd);
-#endif
-#if defined(CONFIG_BOOTREG_TAG)
-
-	if (get_chipid() == _HI3716M_V200)
-		setup_bootreg_tag(bd);
-
-#endif
-	setup_eth_param();
-	setup_param_tag(bd);
-	setup_end_tag (bd);
-#endif
-
-	/* we assume that the kernel is in place */
-	printf ("\nStarting kernel ...\n\n");
-
-#ifdef CONFIG_USB_DEVICE
-	{
-		extern void udc_disconnect (void);
-		udc_disconnect ();
-	}
-#endif
-
-	cleanup_before_linux ();
-
-	theKernel (0, machid, bd->bi_boot_params);
-	/* does not return */
-
-	return 1;
+	asm("mov %0, sp" : "=r"(ret) : );
+	return ret;
 }
 
+void arch_lmb_reserve(struct lmb *lmb)
+{
+	ulong sp;
+
+	/*
+	 * Booting a (Linux) kernel image
+	 *
+	 * Allocate space for command line and board info - the
+	 * address should be as high as possible within the reach of
+	 * the kernel (see CONFIG_SYS_BOOTMAPSZ settings), but in unused
+	 * memory, which means far enough below the current stack
+	 * pointer.
+	 */
+	sp = get_sp();
+	debug("## Current stack ends at 0x%08lx ", sp);
+
+	/* adjust sp by 4K to be safe */
+	sp -= 4096;
+	lmb_reserve(lmb, sp,
+		    gd->bd->bi_dram[0].start + gd->bd->bi_dram[0].size - sp);
+}
+
+#ifdef CONFIG_OF_LIBFDT
+static int fixup_memory_node(void *blob)
+{
+	bd_t	*bd = gd->bd;
+	int bank;
+	u64 start[CONFIG_NR_DRAM_BANKS];
+	u64 size[CONFIG_NR_DRAM_BANKS];
+
+	for (bank = 0; bank < CONFIG_NR_DRAM_BANKS; bank++) {
+		start[bank] = bd->bi_dram[bank].start;
+		size[bank] = bd->bi_dram[bank].size;
+	}
+
+	return fdt_fixup_memory_banks(blob, start, size, CONFIG_NR_DRAM_BANKS);
+}
+#endif
+
+static void announce_and_cleanup(void)
+{
+	printf("\nStarting kernel ...\n\n");
+	bootstage_mark_name(BOOTSTAGE_ID_BOOTM_HANDOFF, "start_kernel");
+#ifdef CONFIG_BOOTSTAGE_FDT
+	bootstage_fdt_add_report();
+#endif
+#ifdef CONFIG_BOOTSTAGE_REPORT
+	bootstage_report();
+#endif
+
+	cleanup_before_linux();
+}
 
 #if defined(CONFIG_SETUP_MEMORY_TAGS) || \
-defined(CONFIG_CMDLINE_TAG) || \
-defined(CONFIG_INITRD_TAG) || \
-defined(CONFIG_SERIAL_TAG) || \
-defined(CONFIG_REVISION_TAG) || \
-defined(CONFIG_ETHADDR_TAG) || \
-defined(CONFIG_SDKVERSION_TAG) || \
-defined(CONFIG_BOOTREG_TAG)
+	defined(CONFIG_CMDLINE_TAG) || \
+	defined(CONFIG_INITRD_TAG) || \
+	defined(CONFIG_SERIAL_TAG) || \
+	defined(CONFIG_REVISION_TAG)
 static void setup_start_tag (bd_t *bd)
 {
-	params = (struct tag *) bd->bi_boot_params;
+	params = (struct tag *)bd->bi_boot_params;
 
 	params->hdr.tag = ATAG_CORE;
 	params->hdr.size = tag_size (tag_core);
@@ -210,9 +123,10 @@ static void setup_start_tag (bd_t *bd)
 
 	params = tag_next (params);
 }
+#endif
 
 #ifdef CONFIG_SETUP_MEMORY_TAGS
-static void setup_memory_tags (bd_t *bd)
+static void setup_memory_tags(bd_t *bd)
 {
 	int i;
 
@@ -226,9 +140,10 @@ static void setup_memory_tags (bd_t *bd)
 		params = tag_next (params);
 	}
 }
-#endif /* CONFIG_SETUP_MEMORY_TAGS */
+#endif
 
-static void setup_commandline_tag (bd_t *bd, char *commandline)
+#ifdef CONFIG_CMDLINE_TAG
+static void setup_commandline_tag(bd_t *bd, char *commandline)
 {
 	char *p;
 
@@ -248,149 +163,14 @@ static void setup_commandline_tag (bd_t *bd, char *commandline)
 	params->hdr.size =
 		(sizeof (struct tag_header) + strlen (p) + 1 + 4) >> 2;
 
-	strncpy (params->u.cmdline.cmdline, p, strlen(p));
-	params->u.cmdline.cmdline[strlen(p)] = '\0';
+	strcpy (params->u.cmdline.cmdline, p);
 
 	params = tag_next (params);
-}
-
-#ifdef CONFIG_ETHMDIO_INF
-static void setup_eth_mdiointf_tag(bd_t *bd, char *mdio_intf)
-{
-	unsigned char mac[6];
-	if (!mdio_intf)
-		return ;
-	params->hdr.tag = CONFIG_ETH_MDIO_INF_TAG_VAL;
-	params->hdr.size = 4;
-
-	memcpy(&params->u, mdio_intf, (strlen(mdio_intf)+1));
-	params = tag_next(params);
-}
-#endif
-#ifdef CONFIG_ETHADDR_TAG
-static void string_to_mac(unsigned char *mac, char* s)
-{
-	int i;
-	char *e;
-
-	for (i = 0; i < 6; ++i) {
-		mac[i] = s ? simple_strtoul(s, &e, 16) : 0;
-		if (s)
-			s = (*e) ? e+1 : e;
-	}
-}
-
-static void setup_ethaddr_tag(bd_t *bd, char *ethaddr)
-{
-	unsigned char mac[6];
-	if (!ethaddr)
-		return ;
-
-	params->hdr.tag = CONFIG_ETHADDR_TAG_VAL;
-	params->hdr.size = 4;
-
-	string_to_mac(&mac[0], ethaddr);
-	memcpy(&params->u, mac, 6);
-
-	params = tag_next(params);
-}
-
-static void setup_phyaddr_tag(bd_t *bd, int phy_addr_up, int phy_addr_down)
-{
-	params->hdr.tag = CONFIG_PHYADDR_TAG_VAL;
-	params->hdr.size = 4;
-
-	*(int*)(&params->u) = phy_addr_up;
-	*((int*)(&params->u) + 1) = phy_addr_down;
-
-	params = tag_next(params);
-}
-#endif
-
-#ifdef CONFIG_NANDID_TAG
-extern struct nand_tag nandtag[1];
-
-static void setup_nandid_tag(bd_t *bd)
-{
-	if (nandtag->length == 0)
-		return;
-
-	params->hdr.tag = ATAG_NDNDID;
-	params->hdr.size = (sizeof(struct tag_header)
-			+ sizeof(struct nand_tag)) >> 2;
-
-	memcpy(&params->u, nandtag, sizeof(struct nand_tag));
-
-	params = tag_next(params);
-}
-#endif
-
-#ifdef CONFIG_NAND_PARAM_TAG
-extern int nand_get_rr_param(char *param);
-
-static void set_nand_param_tag(bd_t *bd)
-{
-	int size;
-
-	params->hdr.tag = ATAG_NAND_PARAM;
-	size = nand_get_rr_param((char *)&params->u);
-	params->hdr.size = (sizeof(struct tag_header) + size) >> 2;
-	params = tag_next(params);
-}
-#endif /* CONFIG_NAND_PARAM_TAG */
-
-#ifdef CONFIG_SPIID_TAG
-extern struct spi_tag spitag[1];
-
-static void setup_spiid_tag(bd_t *bd)
-{
-	if (spitag->id_len == 0)
-		return;
-
-	params->hdr.tag = ATAG_SPIID;
-	params->hdr.size = (sizeof(struct tag_header) +
-			sizeof(struct spi_tag)) >> 2;
-
-	memcpy(&params->u, &spitag, sizeof(struct spi_tag));
-
-	params = tag_next(params);
-}
-#endif
-
-#ifdef CONFIG_SDKVERSION_TAG
-#define SDKVERSION_LENGTH                 64
-static void setup_sdkversion_tag(bd_t *bd)
-{
-	char *version = CONFIG_SDKVERSION;
-
-	params->hdr.tag = CONFIG_SDKVERSION_TAG_VAL;
-	params->hdr.size = (sizeof(struct tag_header) + SDKVERSION_LENGTH) >> 2;
-	memcpy(&params->u, version, SDKVERSION_LENGTH);
-
-	params = tag_next(params);
-}
-#endif
-
-#ifdef CONFIG_BOOTREG_TAG
-static void setup_bootreg_tag(bd_t *bd)
-{
-	extern unsigned int _blank_zone_start;
-	extern unsigned int _blank_zone_end;
-	int length = _blank_zone_end - _blank_zone_start;
-
-	params->hdr.tag = CONFIG_BOOTREG_TAG_VAL;
-	params->hdr.size = (sizeof(struct tag_header)
-		+ sizeof(int) + length) >> 2;
-	*(int *)&params->u = length;
-	memcpy(((char *)&params->u + sizeof(int)),
-		(char *)_blank_zone_start, length);
-
-	params = tag_next(params);
 }
 #endif
 
 #ifdef CONFIG_INITRD_TAG
-static void setup_initrd_tag (bd_t *bd, ulong initrd_start, ulong initrd_end)
+static void setup_initrd_tag(bd_t *bd, ulong initrd_start, ulong initrd_end)
 {
 	/* an ATAG_INITRD node tells the kernel where the compressed
 	 * ramdisk can be found. ATAG_RDIMG is a better name, actually.
@@ -403,10 +183,10 @@ static void setup_initrd_tag (bd_t *bd, ulong initrd_start, ulong initrd_end)
 
 	params = tag_next (params);
 }
-#endif /* CONFIG_INITRD_TAG */
+#endif
 
 #ifdef CONFIG_SERIAL_TAG
-void setup_serial_tag (struct tag **tmp)
+void setup_serial_tag(struct tag **tmp)
 {
 	struct tag *params = *tmp;
 	struct tag_serialnr serialnr;
@@ -434,64 +214,193 @@ void setup_revision_tag(struct tag **in_params)
 	params->u.revision.rev = rev;
 	params = tag_next (params);
 }
-#endif  /* CONFIG_REVISION_TAG */
+#endif
 
-extern int get_param_tag_data(char *tagbuf);
-
-static void setup_eth_param(void)
-{
-	int i;
-	char *env;
-#define MAX_MAC_NUMS    (2)
-
-	env = get_eth_phymdio_str();
-	if (env)
-		set_param_data("phymdio", env, strlen(env));
-
-	env = get_eth_phyaddr_str();
-	if (env)
-		set_param_data("phyaddr", env, strlen(env));
-
-	env = get_eth_phyintf_str();
-	if (env)
-		set_param_data("phyintf", env, strlen(env));
-
-	env = getenv("ethaddr");
-	if (env)
-		set_param_data("ethaddr", env, strlen(env));
-
-	for (i = 0; i < MAX_MAC_NUMS; i++) {
-		char name[16];
-		u32 gpio_base, gpio_bit, data[2];
-
-		get_eth_phygpio(i, &gpio_base, &gpio_bit);
-		if (!gpio_base)
-			continue;
-		snprintf(name, sizeof(name), "phyio%d", i);
-		data[0] = gpio_base;
-		data[1] = gpio_bit;
-		set_param_data(name, (const char *)&data, sizeof(data));
-	}
-}
-
-static void setup_param_tag(bd_t *bd)
-{
-	int length;
-
-	length = get_param_tag_data((char *)&params->u);
-	if (!length)
-		return;
-
-	params->hdr.tag  = 0x70000001;
-	params->hdr.size = ((sizeof(struct tag_header) + length) >> 2);
-
-	params = tag_next(params);
-}
-
-static void setup_end_tag (bd_t *bd)
+#if defined(CONFIG_SETUP_MEMORY_TAGS) || \
+	defined(CONFIG_CMDLINE_TAG) || \
+	defined(CONFIG_INITRD_TAG) || \
+	defined(CONFIG_SERIAL_TAG) || \
+	defined(CONFIG_REVISION_TAG)
+static void setup_end_tag(bd_t *bd)
 {
 	params->hdr.tag = ATAG_NONE;
 	params->hdr.size = 0;
 }
+#endif
 
-#endif /* CONFIG_SETUP_MEMORY_TAGS || CONFIG_CMDLINE_TAG || CONFIG_INITRD_TAG */
+#ifdef CONFIG_OF_LIBFDT
+static int create_fdt(bootm_headers_t *images)
+{
+	ulong of_size = images->ft_len;
+	char **of_flat_tree = &images->ft_addr;
+	ulong *initrd_start = &images->initrd_start;
+	ulong *initrd_end = &images->initrd_end;
+	struct lmb *lmb = &images->lmb;
+	ulong rd_len;
+	int ret;
+
+	debug("using: FDT\n");
+
+	boot_fdt_add_mem_rsv_regions(lmb, *of_flat_tree);
+
+	rd_len = images->rd_end - images->rd_start;
+	ret = boot_ramdisk_high(lmb, images->rd_start, rd_len,
+			initrd_start, initrd_end);
+	if (ret)
+		return ret;
+
+	ret = boot_relocate_fdt(lmb, of_flat_tree, &of_size);
+	if (ret)
+		return ret;
+
+	fdt_chosen(*of_flat_tree, 1);
+	fixup_memory_node(*of_flat_tree);
+	fdt_fixup_ethernet(*of_flat_tree);
+	fdt_initrd(*of_flat_tree, *initrd_start, *initrd_end, 1);
+#ifdef CONFIG_OF_BOARD_SETUP
+	ft_board_setup(*of_flat_tree, gd->bd);
+#endif
+
+	return 0;
+}
+#endif
+
+__weak void setup_board_tags(struct tag **in_params) {}
+
+/* Subcommand: PREP */
+static void boot_prep_linux(bootm_headers_t *images)
+{
+#ifdef CONFIG_CMDLINE_TAG
+	char *commandline = getenv("bootargs");
+#endif
+
+#ifdef CONFIG_OF_LIBFDT
+	if (images->ft_len) {
+		debug("using: FDT\n");
+		if (create_fdt(images)) {
+			printf("FDT creation failed! hanging...");
+			hang();
+		}
+	} else
+#endif
+	{
+#if defined(CONFIG_SETUP_MEMORY_TAGS) || \
+	defined(CONFIG_CMDLINE_TAG) || \
+	defined(CONFIG_INITRD_TAG) || \
+	defined(CONFIG_SERIAL_TAG) || \
+	defined(CONFIG_REVISION_TAG)
+		debug("using: ATAGS\n");
+		setup_start_tag(gd->bd);
+#ifdef CONFIG_SERIAL_TAG
+		setup_serial_tag(&params);
+#endif
+#ifdef CONFIG_CMDLINE_TAG
+		setup_commandline_tag(gd->bd, commandline);
+#endif
+#ifdef CONFIG_REVISION_TAG
+		setup_revision_tag(&params);
+#endif
+#ifdef CONFIG_SETUP_MEMORY_TAGS
+		setup_memory_tags(gd->bd);
+#endif
+#ifdef CONFIG_INITRD_TAG
+		if (images->rd_start && images->rd_end)
+			setup_initrd_tag(gd->bd, images->rd_start,
+			images->rd_end);
+#endif
+		setup_board_tags(&params);
+		setup_end_tag(gd->bd);
+#else /* all tags */
+		printf("FDT and ATAGS support not compiled in - hanging\n");
+		hang();
+#endif /* all tags */
+	}
+}
+
+/* Subcommand: GO */
+static void boot_jump_linux(bootm_headers_t *images)
+{
+	unsigned long machid = gd->bd->bi_arch_number;
+	char *s;
+	void (*kernel_entry)(int zero, int arch, uint params);
+	unsigned long r2;
+
+	kernel_entry = (void (*)(int, int, uint))images->ep;
+
+	s = getenv("machid");
+	if (s) {
+		strict_strtoul(s, 16, &machid);
+		printf("Using machid 0x%lx from environment\n", machid);
+	}
+
+	debug("## Transferring control to Linux (at address %08lx)" \
+		"...\n", (ulong) kernel_entry);
+	bootstage_mark(BOOTSTAGE_ID_RUN_OS);
+	announce_and_cleanup();
+
+#ifdef CONFIG_OF_LIBFDT
+	if (images->ft_len)
+		r2 = (unsigned long)images->ft_addr;
+	else
+#endif
+		r2 = gd->bd->bi_boot_params;
+
+	kernel_entry(0, machid, r2);
+}
+
+/* Main Entry point for arm bootm implementation
+ *
+ * Modeled after the powerpc implementation
+ * DIFFERENCE: Instead of calling prep and go at the end
+ * they are called if subcommand is equal 0.
+ */
+int do_bootm_linux(int flag, int argc, char *argv[], bootm_headers_t *images)
+{
+	/* No need for those on ARM */
+	if (flag & BOOTM_STATE_OS_BD_T || flag & BOOTM_STATE_OS_CMDLINE)
+		return -1;
+
+	if (flag & BOOTM_STATE_OS_PREP) {
+		boot_prep_linux(images);
+		return 0;
+	}
+
+	if (flag & BOOTM_STATE_OS_GO) {
+		boot_jump_linux(images);
+		return 0;
+	}
+
+	boot_prep_linux(images);
+	boot_jump_linux(images);
+	return 0;
+}
+
+#ifdef CONFIG_CMD_BOOTZ
+
+struct zimage_header {
+	uint32_t	code[9];
+	uint32_t	zi_magic;
+	uint32_t	zi_start;
+	uint32_t	zi_end;
+};
+
+#define	LINUX_ARM_ZIMAGE_MAGIC	0x016f2818
+
+int bootz_setup(void *image, void **start, void **end)
+{
+	struct zimage_header *zi = (struct zimage_header *)image;
+
+	if (zi->zi_magic != LINUX_ARM_ZIMAGE_MAGIC) {
+		puts("Bad Linux ARM zImage magic!\n");
+		return 1;
+	}
+
+	*start = (void *)zi->zi_start;
+	*end = (void *)zi->zi_end;
+
+	debug("Kernel image @ 0x%08x [ 0x%08x - 0x%08x ]\n",
+		(uint32_t)image, (uint32_t)*start, (uint32_t)*end);
+
+	return 0;
+}
+#endif	/* CONFIG_CMD_BOOTZ */
