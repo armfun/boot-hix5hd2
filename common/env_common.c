@@ -54,103 +54,25 @@ static uchar env_get_char_init (int index);
 /************************************************************************
  * Default settings to be used when no valid environment is found
  */
-#define XMK_STR(x)	#x
-#define MK_STR(x)	XMK_STR(x)
-
-#ifdef CONFIG_SUPPORT_CA_RELEASE
-uchar default_environment[] = {
-	"\0"
-};
-#else
-uchar default_environment[] = {
-#ifdef	CONFIG_BOOTARGS
-	"bootargs="	CONFIG_BOOTARGS			"\0"
-#endif
-#ifdef	CONFIG_BOOTCOMMAND
-	"bootcmd="	CONFIG_BOOTCOMMAND		"\0"
-#endif
-#ifdef	CONFIG_RAMBOOTCOMMAND
-	"ramboot="	CONFIG_RAMBOOTCOMMAND		"\0"
-#endif
-#ifdef	CONFIG_NFSBOOTCOMMAND
-	"nfsboot="	CONFIG_NFSBOOTCOMMAND		"\0"
-#endif
-#if defined(CONFIG_BOOTDELAY) && (CONFIG_BOOTDELAY >= 0)
-	"bootdelay="	MK_STR(CONFIG_BOOTDELAY)	"\0"
-#endif
-#if defined(CONFIG_BAUDRATE) && (CONFIG_BAUDRATE >= 0)
-	"baudrate="	MK_STR(CONFIG_BAUDRATE)		"\0"
-#endif
-#ifdef	CONFIG_LOADS_ECHO
-	"loads_echo="	MK_STR(CONFIG_LOADS_ECHO)	"\0"
-#endif
-#ifdef	CONFIG_MDIO_INTF
-	"mdio_intf="	CONFIG_MDIO_INTF	        "\0"
-#endif
-#ifdef	CONFIG_ETHADDR
-	"ethaddr="	MK_STR(CONFIG_ETHADDR)		"\0"
-#endif
-#ifdef	CONFIG_ETH1ADDR
-	"eth1addr="	MK_STR(CONFIG_ETH1ADDR)		"\0"
-#endif
-#ifdef	CONFIG_ETH2ADDR
-	"eth2addr="	MK_STR(CONFIG_ETH2ADDR)		"\0"
-#endif
-#ifdef	CONFIG_ETH3ADDR
-	"eth3addr="	MK_STR(CONFIG_ETH3ADDR)		"\0"
-#endif
-#ifdef	CONFIG_ETH4ADDR
-	"eth4addr="	MK_STR(CONFIG_ETH4ADDR)		"\0"
-#endif
-#ifdef	CONFIG_ETH5ADDR
-	"eth5addr="	MK_STR(CONFIG_ETH5ADDR)		"\0"
-#endif
-#ifdef	CONFIG_IPADDR
-	"ipaddr="	MK_STR(CONFIG_IPADDR)		"\0"
-#endif
-#ifdef	CONFIG_SERVERIP
-	"serverip="	MK_STR(CONFIG_SERVERIP)		"\0"
-#endif
-#ifdef	CONFIG_SYS_AUTOLOAD
-	"autoload="	CONFIG_SYS_AUTOLOAD			"\0"
-#endif
-#ifdef	CONFIG_PREBOOT
-	"preboot="	CONFIG_PREBOOT			"\0"
-#endif
-#ifdef	CONFIG_ROOTPATH
-	"rootpath="	MK_STR(CONFIG_ROOTPATH)		"\0"
-#endif
-#ifdef	CONFIG_GATEWAYIP
-	"gatewayip="	MK_STR(CONFIG_GATEWAYIP)	"\0"
-#endif
-#ifdef	CONFIG_NETMASK
-	"netmask="	MK_STR(CONFIG_NETMASK)		"\0"
-#endif
-#ifdef	CONFIG_HOSTNAME
-	"hostname="	MK_STR(CONFIG_HOSTNAME)		"\0"
-#endif
-#ifdef	CONFIG_BOOTFILE
-	"bootfile="	MK_STR(CONFIG_BOOTFILE)		"\0"
-#endif
-#ifdef	CONFIG_LOADADDR
-	"loadaddr="	MK_STR(CONFIG_LOADADDR)		"\0"
-#endif
-#ifdef  CONFIG_CLOCKS_IN_MHZ
-	"clocks_in_mhz=1\0"
-#endif
-#if defined(CONFIG_PCI_BOOTDELAY) && (CONFIG_PCI_BOOTDELAY > 0)
-	"pcidelay="	MK_STR(CONFIG_PCI_BOOTDELAY)	"\0"
-#endif
-#ifdef  CONFIG_EXTRA_ENV_SETTINGS
-	CONFIG_EXTRA_ENV_SETTINGS
-#endif
-	"\0"
-};
-#endif
+#include <env_default.h>
 
 void env_crc_update (void)
 {
 	env_ptr->crc = crc32(0, env_ptr->data, ENV_SIZE);
+}
+
+/*
+ * Read an environment variable as a boolean
+ * Return -1 if variable does not exist (default to true)
+ */
+int getenv_yesno(char *var)
+{
+	char *s = getenv(var);
+
+	if (s == NULL)
+		return -1;
+	return (*s == '1' || *s == 'y' || *s == 'Y' || *s == 't' || *s == 'T') ?
+		1 : 0;
 }
 
 static uchar env_get_char_init (int index)
@@ -205,7 +127,7 @@ uchar env_get_char (int index)
 	return (c);
 }
 
-uchar *env_get_addr (int index)
+const uchar *env_get_addr(int index)
 {
 	if (gd->env_valid) {
 		return ( ((uchar *)(gd->env_addr + index)) );

@@ -52,4 +52,7 @@ typedef struct bd_info {
 #define bi_env_data bi_env->data
 #define bi_env_crc  bi_env->crc
 
+/* For image.h:image_check_target_arch() */
+#define IH_ARCH_DEFAULT IH_ARCH_ARM
+
 #endif	/* _U_BOOT_H_ */

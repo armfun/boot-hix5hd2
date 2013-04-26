@@ -47,7 +47,7 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 /* references to names in env_common.c */
-extern uchar default_environment[];
+extern const uchar default_environment[];
 
 extern env_t *env_ptr;
 

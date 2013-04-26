@@ -411,13 +411,29 @@ int _do_setenv (int flag, int argc, char *argv[])
 	return 0;
 }
 
-int setenv (char *varname, char *varvalue)
+int setenv(const char *varname, const char *varvalue)
 {
-	char *argv[4] = { "setenv", varname, varvalue, NULL };
-	if ((varvalue == NULL) || (varvalue[0] == '\0'))
-		return _do_setenv (0, 2, argv);
+	const char * const argv[4] = { "setenv", varname, varvalue, NULL };
+
+	if (varvalue == NULL || varvalue[0] == '\0')
+		return _do_setenv(0, 2, (char * const *)argv);
 	else
-		return _do_setenv (0, 3, argv);
+		return _do_setenv(0, 3, (char * const *)argv);
+}
+
+/**
+ * Set an environment variable to an value in hex
+ *
+ * @param varname	Environmet variable to set
+ * @param value		Value to set it to
+ * @return 0 if ok, 1 on error
+ */
+int setenv_hex(const char *varname, ulong value)
+{
+	char str[17];
+
+	sprintf(str, "%lx", value);
+	return setenv(varname, str);
 }
 
 #ifdef CONFIG_HAS_UID
@@ -549,8 +565,7 @@ int do_editenv(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
  * return address of storage for that variable,
  * or NULL if not found
  */
-
-char *getenv (char *name)
+char *getenv(const char *name)
 {
 	int i, nxt;
 

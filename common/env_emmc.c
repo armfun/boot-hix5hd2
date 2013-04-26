@@ -33,6 +33,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 /* references to names in env_common.c */
 extern uchar default_environment[];
+
 extern env_t *env_ptr;
 
 static uchar emmc_env_get_char_spec(int index)

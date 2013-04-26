@@ -58,7 +58,7 @@
 #endif
 
 /* references to names in env_common.c */
-extern uchar default_environment[];
+extern const uchar default_environment[];
 
 #if defined(ENV_IS_EMBEDDED)
 extern uchar environment[];

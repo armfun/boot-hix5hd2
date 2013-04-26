@@ -10,31 +10,14 @@ unsigned long get_version(void);
 int  getc(void);
 int  tstc(void);
 void putc(const char);
-#ifndef CONFIG_SUPPORT_CA_RELEASE
 void puts(const char*);
-void printf(const char* fmt, ...);
-#else
-#define puts(fmt)\
-do{\
-	 __asm__ __volatile__("mov\tr0,r0\t@ nop\n\t");\
-}while(0)
-
-#define printf(fmt, ...)\
-do{\
-	__asm__ __volatile__("mov\tr0,r0\t@ nop\n\t");\
-}while(0)
-#endif
 void install_hdlr(int, interrupt_handler_t*, void*);
 void free_hdlr(int);
 void *malloc(size_t);
 void free(void*);
 void __udelay(unsigned long);
 unsigned long get_timer(unsigned long);
-void vprintf(const char *, va_list);
-int do_reset (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
 unsigned long simple_strtoul(const char *cp,char **endp,unsigned int base);
-char *getenv (char *name);
-int setenv (char *varname, char *varvalue);
 long simple_strtol(const char *cp,char **endp,unsigned int base);
 int strcmp(const char * cs,const char * ct);
 int ustrtoul(const char *cp, char **endp, unsigned int base);
