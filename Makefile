@@ -247,6 +247,9 @@ LIBS += $(LIBSPRODUCT)
 endif
 
 ################################################################################
+
+LIBS += lib/libfdt/libfdt.a
+
 LIBS := $(addprefix $(obj),$(LIBS))
 .PHONY : $(LIBS) $(TIMESTAMP_FILE) $(VERSION_FILE)
 
