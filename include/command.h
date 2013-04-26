@@ -97,7 +97,7 @@ typedef	void	command_t (cmd_tbl_t *, int, int, char *[]);
 extern int cmd_get_data_size(char* arg, int default_size);
 #endif
 
-extern int do_reset(cmd_tbl_t *cmdtp, int flag, int argc, char * argv[]);
+extern int do_reset(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 
 /*
  * Error codes that commands return to cmd_process(). We use the standard 0
