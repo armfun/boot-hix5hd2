@@ -89,3 +89,42 @@ int dram_init (void)
 	display_info();
 	return 0;
 }
+
+#ifdef CONFIG_OF_BOARD_SETUP
+void ft_board_setup(void *fdt, bd_t *bd)
+{
+	char *version = CONFIG_SDKVERSION;
+	int nodeoffset, err;
+	extern unsigned int _blank_zone_start;
+	extern unsigned int _blank_zone_end;
+	int length = _blank_zone_end - _blank_zone_start;
+
+	nodeoffset = fdt_path_offset (fdt, "/tags");
+	/*
+	 * If there is no "tags" node in the blob, create it.
+	 */
+	if (nodeoffset < 0) {
+		/*
+		 * Create a new node "/tags" (offset 0 is root level)
+		 */
+		nodeoffset = fdt_add_subnode(fdt, 0, "tags");
+		if (nodeoffset < 0) {
+			printf("WARNING: could not create /tags %s.\n",
+				fdt_strerror(nodeoffset));
+			return nodeoffset;
+		}
+	}
+
+	err = fdt_setprop(fdt, nodeoffset,
+			"sdkversion", version, strlen(version)+1);
+	if (err < 0)
+		printf("WARNING: could not set sdkversion %s.\n",
+				fdt_strerror(err));
+
+	err = fdt_setprop(fdt, nodeoffset,
+			"bootreg", _blank_zone_start, length);
+	if (err < 0)
+		printf("WARNING: could not set bootreg %s.\n",
+				fdt_strerror(err));
+}
+#endif
