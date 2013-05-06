@@ -1,4 +1,4 @@
-PLATFORM_RELFLAGS += -fno-strict-aliasing -fno-common -ffixed-r8 
+PLATFORM_RELFLAGS += -fno-strict-aliasing -fno-common -ffixed-r8 -mno-unaligned-access
 #		     -msoft-float
 
 # Make ARMv5 to allow more compilers to work, even though its v7a.
