@@ -45,6 +45,7 @@ int cleanup_before_linux(void)
 
 	return 0;
 }
+
 /******************************************************************************/
 
 static int hi3716mv300_boot_media(char **media)
@@ -339,7 +340,6 @@ static int hi3712_get_cpu_version(char **version)
 	return regval;
 }
 /******************************************************************************/
-
 struct cpu_info_t cpu_info[] = {
 	{
 		.name   = "Unknown",
@@ -350,6 +350,7 @@ struct cpu_info_t cpu_info[] = {
 		.boot_media = NULL,
 		.get_clock  = NULL,
 		.get_cpu_version = NULL,
+		.compatible = NULL,
 	},
 	{
 		.name   = "Hi3716Mv100",
@@ -360,6 +361,7 @@ struct cpu_info_t cpu_info[] = {
 		.boot_media = hi3716x_boot_media,
 		.get_clock  = get_hi3716x_clock,
 		.get_cpu_version = NULL,
+		.compatible = "hisilicon,hi3716Mv100",
 	},
 	{
 		.name   = "Hi3716Mv200",
@@ -370,6 +372,7 @@ struct cpu_info_t cpu_info[] = {
 		.boot_media = hi3716x_boot_media,
 		.get_clock  = get_hi3716mv200_clock,
 		.get_cpu_version = NULL,
+		.compatible = "hisilicon,hi3716Mv200",		
 	},
 	{
 		.name   = "Hi3716Mv300",
@@ -380,6 +383,7 @@ struct cpu_info_t cpu_info[] = {
 		.boot_media = hi3716mv300_boot_media,
 		.get_clock  = get_hi3716mv300_clock,
 		.get_cpu_version = NULL,
+		.compatible = "hisilicon,hi3716Mv300",		
 	},
 	{
 		.name   = "Hi3716Cv100",
@@ -390,6 +394,7 @@ struct cpu_info_t cpu_info[] = {
 		.boot_media = hi3716x_boot_media,
 		.get_clock  = get_hi3716x_clock,
 		.get_cpu_version = NULL,
+		.compatible = "hisilicon,hi3716Cv100",		
 	},
 	{
 		.name   = "Hi3716Hv100",
@@ -400,6 +405,7 @@ struct cpu_info_t cpu_info[] = {
 		.boot_media = hi3716x_boot_media,
 		.get_clock  = get_hi3716x_clock,
 		.get_cpu_version = NULL,
+		.compatible = "hisilicon,hi3716Hv100",				
 	},
 	{
 		.name   = "Hi3712v100",
@@ -410,6 +416,7 @@ struct cpu_info_t cpu_info[] = {
 		.boot_media = hi3712_boot_media,
 		.get_clock  = get_hi3712_clock,
 		.get_cpu_version = hi3712_get_cpu_version,
+		.compatible = "hisilicon,hi3712v100",						
 	},
 	{0},
 };

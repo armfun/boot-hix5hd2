@@ -12,6 +12,10 @@
 
 struct cpu_info_t {
 	char        *name;
+        /* dtb compatible info, used to select the suitable dtb,
+        * must be same with the kernel's dtb compatible
+        */
+	char *compatible;
 	long long    chipid;
 	long long    chipid_mask;
 	unsigned int max_ddr_size;
