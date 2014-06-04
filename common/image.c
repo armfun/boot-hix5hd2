@@ -579,9 +579,9 @@ int get_table_entry_id (table_entry_t *table,
 #else
 	for (t = table; t->id >= 0; ++t) {
 #ifdef CONFIG_RELOC_FIXUP_WORKS
-		if (t->sname && strncmp(t->sname, name, strlen(t->sname) + 1) == 0)
+		if (t->sname && strcmp(t->sname, name) == 0)
 #else
-		if (t->sname && strncmp(t->sname + gd->reloc_off, name, strlen(name) + 1) == 0)
+		if (t->sname && strcmp(t->sname + gd->reloc_off, name) == 0)
 #endif
 			return (t->id);
 	}
@@ -780,7 +780,7 @@ int boot_get_ramdisk (int argc, char *argv[], bootm_headers_t *images,
 	 * Look for a '-' which indicates to ignore the
 	 * ramdisk argument
 	 */
-	if ((argc >= 3) && (strncmp(argv[2], "-", sizeof("-")) ==  0)) {
+	if ((argc >= 3) && (strcmp(argv[2], "-") ==  0)) {
 		debug ("## Skipping init Ramdisk\n");
 		rd_len = rd_data = 0;
 	} else if (argc >= 3 || genimg_has_config (images)) {
@@ -2417,16 +2417,16 @@ int fit_set_timestamp (void *fit, int noffset, time_t timestamp)
 static int calculate_hash (const void *data, int data_len, const char *algo,
 			uint8_t *value, int *value_len)
 {
-	if (strncmp (algo, "crc32", sizeof("crc32")) == 0 ) {
+	if (strcmp (algo, "crc32") == 0 ) {
 		*((uint32_t *)value) = crc32_wd (0, data, data_len,
 							CHUNKSZ_CRC32);
 		*((uint32_t *)value) = cpu_to_uimage (*((uint32_t *)value));
 		*value_len = 4;
-	} else if (strncmp (algo, "sha1", sizeof("sha1")) == 0 ) {
+	} else if (strcmp (algo, "sha1") == 0 ) {
 		sha1_csum_wd ((unsigned char *) data, data_len,
 				(unsigned char *) value, CHUNKSZ_SHA1);
 		*value_len = 20;
-	} else if (strncmp (algo, "md5", sizeof("md5")) == 0 ) {
+	} else if (strcmp (algo, "md5") == 0 ) {
 		md5_wd ((unsigned char *)data, data_len, value, CHUNKSZ_MD5);
 		*value_len = 16;
 	} else {

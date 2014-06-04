@@ -472,9 +472,9 @@ static int bootm_start_standalone(ulong iflag, int argc, char *argv[])
 	int   (*appl)(int, char *[]);
 
 	/* Don't start if "autostart" is set to "no" */
-	if (((s = getenv("autostart")) != NULL) && (strncmp(s, "no", sizeof("no")) == 0)) {
+	if (((s = getenv("autostart")) != NULL) && (strcmp(s, "no") == 0)) {
 		char buf[32];
-		snprintf(buf, sizeof(buf), "%lX", images.os.image_len);
+		sprintf(buf, "%lX", images.os.image_len);
 		setenv("filesize", buf);
 		return 0;
 	}
@@ -559,9 +559,9 @@ int do_bootm_subcommand (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 			if (ret)
 				return ret;
 
-			snprintf(str, sizeof(str), "%lx", images.initrd_start);
+			sprintf(str, "%lx", images.initrd_start);
 			setenv("initrd_start", str);
-			snprintf(str, sizeof(str), "%lx", images.initrd_end);
+			sprintf(str, "%lx", images.initrd_end);
 			setenv("initrd_end", str);
 		}
 			break;
@@ -1037,7 +1037,6 @@ static void *boot_get_kernel (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]
 	return (void *)img_addr;
 }
 
-#ifndef CONFIG_SUPPORT_CA_RELEASE
 U_BOOT_CMD(
 	bootm,	CONFIG_SYS_MAXARGS,	1,	do_bootm,
 	"boot application image from memory",
@@ -1075,10 +1074,7 @@ U_BOOT_CMD(
 	"\tprep    - OS specific prep before relocation or go\n"
 	"\tgo      - start OS"
 );
-#else
-U_BOOT_CMD(
-	bootm,	CONFIG_SYS_MAXARGS,	1,	do_bootm, "", "");
-#endif
+
 /*******************************************************************/
 /* bootd - boot default image */
 /*******************************************************************/
@@ -1466,7 +1462,7 @@ static int do_bootm_vxworks (int flag, int argc, char *argv[],
 	}
 #endif
 
-	snprintf(str, sizeof(str), "%lx", images->ep); /* write entry-point into string */
+	sprintf(str, "%lx", images->ep); /* write entry-point into string */
 	setenv("loadaddr", str);
 	do_bootvx(NULL, 0, 0, NULL);
 
@@ -1489,7 +1485,7 @@ static int do_bootm_qnxelf(int flag, int argc, char *argv[],
 	}
 #endif
 
-	snprintf(str, sizeof(str), "%lx", images->ep); /* write entry-point into string */
+	sprintf(str, "%lx", images->ep); /* write entry-point into string */
 	local_args[0] = argv[0];
 	local_args[1] = str;	/* and provide it via the arguments */
 	do_bootelf(NULL, 0, 2, local_args);
