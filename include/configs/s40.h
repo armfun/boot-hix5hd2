@@ -130,6 +130,7 @@
 /* new uImage format support */
 #define CONFIG_FIT		1
 #define CONFIG_FIT_VERBOSE	1 /* enable fit_format_{error,warning}() */
+#define CONFIG_FIT_BEST_MATCH	1
  
 /*-----------------------------------------------------------------------
  * for  commond configure

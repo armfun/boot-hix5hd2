@@ -145,6 +145,7 @@ struct cpu_info_t cpu_info[] = {
 		.boot_media = NULL,
 		.get_clock  = NULL,
 		.get_cpu_version = NULL,
+		.compatible = NULL,
 	},
 	{
 		.name   = "Hi3716Cv200ES",
@@ -155,6 +156,7 @@ struct cpu_info_t cpu_info[] = {
 		.boot_media = hi3716cv200_boot_media,
 		.get_clock  = get_hi3716cv200_clock,
 		.get_cpu_version = NULL,
+		.compatible = "hisilicon,Hi3716Cv200ES",
 	},
 	{
 		.name   = "Hi3716Cv200",
@@ -165,6 +167,7 @@ struct cpu_info_t cpu_info[] = {
 		.boot_media = hi3716cv200_boot_media,
 		.get_clock  = get_hi3716cv200_clock,
 		.get_cpu_version = NULL,
+		.compatible = "hisilicon,Hi3716Cv200",
 	},
 	{
 		.name   = "Hi3719Mv100",
@@ -179,6 +182,7 @@ struct cpu_info_t cpu_info[] = {
 		.boot_media = hi3716cv200_boot_media,
 		.get_clock  = get_hi3716cv200_clock,
 		.get_cpu_version = NULL,
+		.compatible = "hisilicon,Hi3719Mv100",
 	},
 	{
 		.name   = "Hi3719Mv100_A",
@@ -193,6 +197,7 @@ struct cpu_info_t cpu_info[] = {
 		.boot_media = hi3719mv100_a_boot_media,
 		.get_clock  = get_hi3716cv200_clock,
 		.get_cpu_version = NULL,
+		.compatible = "hisilicon,Hi3719Mv100_A",
 	},
 	{
 		.name   = "Hi3718Cv100",
@@ -203,6 +208,7 @@ struct cpu_info_t cpu_info[] = {
 		.boot_media = hi3716cv200_boot_media,
 		.get_clock  = get_hi3716cv200_clock,
 		.get_cpu_version = NULL,
+		.compatible = "hisilicon,Hi3718Cv100",
 	},
 	{
 		.name   = "Hi3719Cv100",
@@ -213,6 +219,7 @@ struct cpu_info_t cpu_info[] = {
 		.boot_media = hi3716cv200_boot_media,
 		.get_clock = get_hi3716cv200_clock,
 		.get_cpu_version = NULL,
+		.compatible = "hisilicon,Hi3719Cv100",
 	},
 	{
 		.name	= "Hi3716Hv200",
@@ -223,6 +230,7 @@ struct cpu_info_t cpu_info[] = {
 		.boot_media = hi3716cv200_boot_media,
 		.get_clock = get_hi3716cv200_clock,
 		.get_cpu_version = NULL,
+		.compatible = "hisilicon,Hi3716Hv200",
 	},
 	{
 		.name	= "Hi3716Mv400",
@@ -233,6 +241,7 @@ struct cpu_info_t cpu_info[] = {
 		.boot_media = hi3716cv200_boot_media,
 		.get_clock	= get_hi3716cv200_clock,
 		.get_cpu_version = NULL,
+		.compatible = "hisilicon,Hi3716Mv400",
 	},
 	{
 		.name   = "Hi3718Mv100",
@@ -247,6 +256,7 @@ struct cpu_info_t cpu_info[] = {
 		.boot_media = hi3716cv200_boot_media,
 		.get_clock  = get_hi3716cv200_clock,
 		.get_cpu_version = NULL,
+		.compatible = "hisilicon,Hi3718Mv100",
 	},
 	{0},
 };
