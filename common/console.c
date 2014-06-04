@@ -48,12 +48,6 @@ extern int overwrite_console(void);
 
 #endif /* CONFIG_SYS_CONSOLE_IS_IN_ENV */
 
-#ifdef CONFIG_SUPPORT_CA_RELEASE
-#undef puts
-#undef printf
-void puts(const char*);
-void printf(const char* fmt, ...);
-#endif
 static int console_setfile(int file, struct stdio_dev * dev)
 {
 	int error = 0;

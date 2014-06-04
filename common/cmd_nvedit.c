@@ -207,11 +207,11 @@ int _do_setenv (int flag, int argc, char *argv[])
 	}
 
 	/* Check for console redirection */
-	if (strncmp(name, "stdin", sizeof("stdin")) == 0) {
+	if (strcmp(name,"stdin") == 0) {
 		console = stdin;
-	} else if (strncmp(name, "stdout", sizeof("stdout")) == 0) {
+	} else if (strcmp(name,"stdout") == 0) {
 		console = stdout;
-	} else if (strncmp(name, "stderr", sizeof("stderr")) == 0) {
+	} else if (strcmp(name,"stderr") == 0) {
 		console = stderr;
 	}
 
@@ -250,13 +250,13 @@ int _do_setenv (int flag, int argc, char *argv[])
 		if (
 #ifdef CONFIG_HAS_UID
 		/* Allow serial# forced overwrite with 0xdeaf4add flag */
-		    ((strncmp (name, "serial#", sizeof("serial#")) == 0) && (flag != 0xdeaf4add)) ||
+		    ((strcmp (name, "serial#") == 0) && (flag != 0xdeaf4add)) ||
 #else
-		    (strncmp (name, "serial#", sizeof("serial#")) == 0) ||
+		    (strcmp (name, "serial#") == 0) ||
 #endif
-		    ((strncmp (name, "ethaddr", sizeof("ethaddr")) == 0)
+		    ((strcmp (name, "ethaddr") == 0)
 #if defined(CONFIG_OVERWRITE_ETHADDR_ONCE) && defined(CONFIG_ETHADDR)
-		     && (strncmp ((char *)env_get_addr(oldval), MK_STR(CONFIG_ETHADDR), sizeof(MK_STR(CONFIG_ETHADDR))) != 0)
+		     && (strcmp ((char *)env_get_addr(oldval),MK_STR(CONFIG_ETHADDR)) != 0)
 #endif	/* CONFIG_OVERWRITE_ETHADDR_ONCE && CONFIG_ETHADDR */
 		    ) ) {
 			printf ("Can't overwrite \"%s\"\n", name);
@@ -267,7 +267,7 @@ int _do_setenv (int flag, int argc, char *argv[])
 		/*
 		 * Switch to new baudrate if new baudrate is supported
 		 */
-		if (strncmp(argv[1], "baudrate", sizeof("baudrate")) == 0) {
+		if (strcmp(argv[1],"baudrate") == 0) {
 			int baudrate = simple_strtoul(argv[2], NULL, 10);
 			int i;
 			for (i=0; i<N_BAUDRATES; ++i) {
@@ -369,10 +369,10 @@ int _do_setenv (int flag, int argc, char *argv[])
 	 * entry in the enviornment is changed
 	 */
 
-	if (strncmp(argv[1], "ethaddr", sizeof("ethaddr")) == 0)
+	if (strcmp(argv[1],"ethaddr") == 0)
 		return 0;
 
-	if (strncmp(argv[1], "ipaddr", sizeof("ipaddr")) == 0) {
+	if (strcmp(argv[1],"ipaddr") == 0) {
 		char *s = argv[2];	/* always use only one arg */
 		char *e;
 		unsigned long addr;
@@ -386,20 +386,20 @@ int _do_setenv (int flag, int argc, char *argv[])
 		bd->bi_ip_addr = htonl(addr);
 		return 0;
 	}
-	if (strncmp(argv[1], "loadaddr", sizeof("loadaddr")) == 0) {
+	if (strcmp(argv[1],"loadaddr") == 0) {
 		load_addr = simple_strtoul(argv[2], NULL, 16);
 		return 0;
 	}
 #if defined(CONFIG_CMD_NET)
-	if (strncmp(argv[1], "bootfile", sizeof("bootfile")) == 0) {
+	if (strcmp(argv[1],"bootfile") == 0) {
 		copy_filename (BootFile, argv[2], sizeof(BootFile));
 		return 0;
 	}
 #endif
 
 #ifdef CONFIG_AMIGAONEG3SE
-	if (strncmp(argv[1], "vga_fg_color", sizeof("vga_fg_color")) == 0 ||
-	    strncmp(argv[1], "vga_bg_color", sizeof("vga_bg_color")) == 0 ) {
+	if (strcmp(argv[1], "vga_fg_color") == 0 ||
+	    strcmp(argv[1], "vga_bg_color") == 0 ) {
 		extern void video_set_color(unsigned char attr);
 		extern unsigned char video_get_attr(void);
 
@@ -613,19 +613,11 @@ int do_saveenv (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return (saveenv() ? 1 : 0);
 }
 
-#ifndef CONFIG_SUPPORT_CA_RELEASE
 U_BOOT_CMD(
 	saveenv, 1, 0,	do_saveenv,
 	"save environment variables to persistent storage",
 	""
 );
-#else
-U_BOOT_CMD(
-	saveenv, 1, 0,	do_saveenv,
-	"",
-	""
-);
-#endif
 
 #endif
 
@@ -661,7 +653,6 @@ U_BOOT_CMD(
 );
 #endif
 
-#ifndef CONFIG_SUPPORT_CA_RELEASE
 U_BOOT_CMD(
 	printenv, CONFIG_SYS_MAXARGS, 1,	do_printenv,
 	"print environment variables",
@@ -669,15 +660,7 @@ U_BOOT_CMD(
 	"printenv name ...\n"
 	"    - print value of environment variable 'name'"
 );
-#else
-U_BOOT_CMD(
-	printenv, CONFIG_SYS_MAXARGS, 1,	do_printenv,
-	"",
-	""
-);
-#endif
 
-#ifndef CONFIG_SUPPORT_CA_RELEASE
 U_BOOT_CMD(
 	setenv, CONFIG_SYS_MAXARGS, 0,	do_setenv,
 	"set environment variables",
@@ -686,13 +669,6 @@ U_BOOT_CMD(
 	"setenv name\n"
 	"    - delete environment variable 'name'"
 );
-#else
-U_BOOT_CMD(
-	setenv, CONFIG_SYS_MAXARGS, 0,	do_setenv,
-	"",
-	""
-);
-#endif
 
 #if defined(CONFIG_CMD_ASKENV)
 
