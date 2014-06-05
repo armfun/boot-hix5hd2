@@ -23,7 +23,7 @@ extern long long get_chipid_reg(void);
 extern unsigned int get_ca_vendor_reg(void);
 /*****************************************************************************/
 
-static struct cpu_info_t *get_cpuinfo(void)
+struct cpu_info_t *get_cpuinfo(void)
 {
 	static struct cpu_info_t *info = NULL;
 	long long chipid = get_chipid_reg();

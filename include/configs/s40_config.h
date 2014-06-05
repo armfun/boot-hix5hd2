@@ -4,21 +4,19 @@
  *  SDK Version
  * 
  */
-#define SDK_VERSION_STRING	"HiSTBLinuxV100R002"
+#define SDK_VERSION_STRING	"HiSTBLinuxV100R002C01SPC020"
 
 
 /*
  *  nand flash support
- * 
+ *  #define CONFIG_NAND_SUPPORT
  */
-#define CONFIG_NAND_SUPPORT	y
 
 
 /*
  *  spi flash support
- * 
+ *  #define CONFIG_SPIFLASH_SUPPORT
  */
-#define CONFIG_SPIFLASH_SUPPORT	y
 
 
 /*
@@ -42,8 +40,9 @@
 
 /*
  *  emmc flash support
- *  #define CONFIG_EMMC_SUPPORT
+ * 
  */
+#define CONFIG_EMMC_SUPPORT	y
 
 
 /*
@@ -81,9 +80,8 @@
 
 /*
  *  build product with boot
- * 
+ *  #define CONFIG_PRODUCT_WITH_BOOT
  */
-#define CONFIG_PRODUCT_WITH_BOOT	y
 
 
 /*
@@ -97,7 +95,7 @@
  *  boot regfile name
  * 
  */
-#define CONFIG_BOOT_REG_NAME	hi3716cdmo2b_hi3716cv200_ddr3_2gbyte_8bitx4_4layers_nand.reg
+#define CONFIG_BOOT_REG_NAME	hi3716cdmo2b_hi3716cv200_ddr3_2gbyte_8bitx4_4layers_emmc.reg
 
 
 /*
@@ -156,24 +154,3 @@
  *  USB Driver config
  *  #define CONFIG_USB_SUPPORT
  */
-
-
-/*
- *  CA type
- * 
- */
-#define CONFIG_SUPPORT_CA	CONAX
-
-
-/*
- *  CA type
- * 
- */
-#define CONFIG_SUPPORT_CA_CONAX	y
-
-
-/*
- *  CA relase
- * 
- */
-#define CONFIG_SUPPORT_CA_RELEASE	y

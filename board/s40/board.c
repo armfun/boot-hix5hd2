@@ -7,6 +7,7 @@
 #include <version.h>
 #include <libfdt.h>
 #include <malloc.h>
+#include <asm/cpu_info.h>
 
 extern void eth_config_init(void);
 

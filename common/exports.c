@@ -3,13 +3,6 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-#ifdef CONFIG_SUPPORT_CA_RELEASE
-#undef puts
-#undef printf
-void puts(const char*);
-void printf(const char* fmt, ...);
-#endif
-
 static void dummy(void)
 {
 }

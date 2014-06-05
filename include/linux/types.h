@@ -151,9 +151,4 @@ struct ustat {
 	char			f_fpack[6];
 };
 
-typedef u_int32_t                  uintmax_t;
-typedef int32_t                    intmax_t;
-typedef int64_t                    quad_t;
-typedef uint64_t                   u_quad_t;
-
 #endif /* _LINUX_TYPES_H */
