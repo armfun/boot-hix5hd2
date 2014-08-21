@@ -4,7 +4,8 @@ How To Compile uboot:
 
 1. select a reg file
 	rm -f ./*.reg
-        cp regs/hix5hd2-dkb.reg ./
+        cp regs/hix5hd2-poplar.reg ./
+    The file "hix5hd2-poplar.reg" is the reg file for board hix5hd2-poplar,
     The file "hix5hd2-dkb.reg" is the reg file for board hix5hd2-dkb,
     you should select a reg file according to your dema board.
 
